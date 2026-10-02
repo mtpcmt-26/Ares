@@ -43,12 +43,12 @@
   font-family: var(--ares-font);
   background: var(--ares-bg);
   color: var(--ares-text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .ares-label {
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   font-size: 10px;
   color: var(--ares-muted);
 }
@@ -101,3 +101,174 @@
 .ares-input { transition: border-color 0.16s ease, box-shadow 0.16s ease; }
 
 ::selection { background: var(--ares-accent); color: #fff; }
+
+/* Layout: desktop rail, tablet/phone drawer, keyboard-aware mobile viewport. */
+.ares-app { position: fixed; inset: var(--ares-viewport-top, 0px) 0 auto; width: 100%; height: 100vh; height: var(--ares-viewport-height, 100dvh); }
+.ares-root *, .ares-root *::before, .ares-root *::after { box-sizing: border-box; }
+.ares-root button, .ares-root a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ares-root button:disabled { cursor: not-allowed; }
+.ares-root :is(button, a, input, textarea):focus-visible { outline: 2px solid var(--ares-accent); outline-offset: 3px; }
+.ares-root button svg { flex-shrink: 0; }
+.ares-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 4px; color: var(--ares-text-dim); }
+.ares-icon-button:hover, .ares-sidebar-action:hover, .ares-conversation-select:hover { background: var(--ares-panel-2); color: var(--ares-text); }
+.ares-topbar { position: relative; z-index: 30; display: grid; grid-template-columns: 34px minmax(90px, 1fr) minmax(180px, 218px) minmax(160px, 1fr); align-items: center; gap: 16px; padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top)); flex-shrink: 0; background: var(--ares-bg); border-bottom: 1px solid var(--ares-border-soft); }
+.ares-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.ares-brand-mark { width: 28px; height: 28px; flex-shrink: 0; background: var(--ares-text); color: var(--ares-bg); display: grid; place-items: center; font-size: 14px; font-weight: 600; }
+.ares-topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.ares-keys-button { width: auto; gap: 8px; padding: 0 10px; border: 1px solid var(--ares-border); }
+.ares-labs-button { display: flex; gap: 7px; align-items: center; min-height: 34px; padding: 0 9px; border: 1px solid var(--ares-border); }
+.ares-labs-indicator { width: 6px; height: 6px; border-radius: 50%; background: var(--ares-muted); }
+.ares-labs-indicator.is-active { background: var(--ares-accent); }
+.ares-mode-picker { position: relative; min-width: 0; }
+.ares-mode-trigger { width: 100%; min-height: 44px; display: flex; gap: 9px; align-items: center; padding: 7px 10px; border: 1px solid var(--ares-border); background: var(--ares-panel-2); border-radius: 4px; }
+.ares-mode-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ares-mode-tagline { display: block; font-size: 10px; color: var(--ares-text-dim); margin-top: 2px; }
+.ares-mode-menu { position: absolute; top: calc(100% + 6px); right: 0; width: 270px; max-width: calc(100vw - 24px); max-height: min(420px, calc(var(--ares-viewport-height, 100dvh) - 140px)); overflow-y: auto; padding: 4px; border: 1px solid var(--ares-border); border-radius: 6px; background: var(--ares-panel); box-shadow: 0 12px 40px #0005; }
+.ares-mode-option { display: flex; align-items: flex-start; gap: 10px; padding: 12px 8px; width: 100%; border-radius: 3px; }
+.ares-mode-option:hover, .ares-mode-option[aria-pressed='true'] { background: var(--ares-panel-2); }
+.ares-sidebar { width: 224px; flex-shrink: 0; display: flex; flex-direction: column; height: 100%; background: var(--ares-panel); border-right: 1px solid var(--ares-border); }
+.ares-sidebar-heading { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; min-height: 44px; }
+.ares-new-chat { display: flex; align-items: center; gap: 9px; border: 1px solid var(--ares-border); width: 100%; min-height: 44px; padding: 8px 12px; font-size: 12px; border-radius: 4px; }
+.ares-new-chat:hover { background: var(--ares-panel-2); }
+.ares-conversation-row { display: flex; align-items: center; border-left: 2px solid transparent; }
+.ares-conversation-row.is-active { background: var(--ares-panel-2); border-left-color: var(--ares-accent); }
+.ares-conversation-select { min-width: 0; flex: 1; display: flex; align-items: flex-start; gap: 9px; padding: 12px; }
+.ares-delete-chat { opacity: 0; margin-right: 4px; }
+.ares-conversation-row:hover .ares-delete-chat, .ares-conversation-row:focus-within .ares-delete-chat { opacity: 1; }
+.ares-sidebar-footer { padding: 8px 4px max(8px, env(safe-area-inset-bottom)); border-top: 1px solid var(--ares-border); }
+.ares-sidebar-action { width: 100%; min-height: 44px; display: flex; gap: 10px; align-items: center; padding: 8px 12px; font-size: 12px; color: var(--ares-text-dim); text-align: left; }
+.ares-drawer { position: fixed; z-index: 51; top: var(--ares-viewport-top, 0px); left: 0; width: min(320px, calc(100vw - 48px)); height: var(--ares-viewport-height, 100dvh); padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); box-shadow: 18px 0 60px #0005; animation: ares-drawer-in 180ms ease-out; }
+.ares-drawer-overlay { background: #0009; backdrop-filter: blur(2px); }
+@keyframes ares-drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.ares-chat-width { width: 100%; max-width: 680px; margin-inline: auto; padding-inline: 24px; }
+.ares-empty-chat { flex: 1; min-height: 0; overflow-y: auto; padding-top: 56px; padding-bottom: 24px; }
+.ares-chat-scroll { overscroll-behavior-y: contain; overflow-x: hidden; }
+.ares-message-list { padding-top: 28px; padding-bottom: 16px; }
+.ares-message-text { font-size: 13px; line-height: 1.75; overflow-wrap: anywhere; }
+.ares-user-bubble { max-width: 85%; padding: 10px 13px; background: var(--ares-bubble-user); color: var(--ares-bubble-user-text); border-radius: 6px 6px 0 6px; min-width: 0; }
+.ares-assistant-message { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px; }
+.ares-avatar { width: 20px; height: 20px; flex-shrink: 0; display: grid; place-items: center; margin-top: 10px; background: var(--ares-panel-2); border: 1px solid var(--ares-border); color: var(--ares-text); font-size: 10px; }
+.ares-assistant-content { min-width: 0; max-width: calc(100% - 30px); }
+.ares-assistant-bubble { padding: 10px 13px; border: 1px solid var(--ares-border); background: var(--ares-panel); border-radius: 0 6px 6px 6px; }
+.ares-copy-button { display: inline-flex; gap: 6px; align-items: center; min-height: 32px; padding: 4px 8px; color: var(--ares-text-dim); font-size: 11px; border-radius: 4px; }
+.ares-copy-button:hover { color: var(--ares-text); background: var(--ares-panel-2); }
+.ares-guest-usage { padding: 0 12px 6px; flex-shrink: 0; }
+.ares-guest-usage .ares-label { line-height: 1.6; }
+.ares-guest-usage button { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding-inline: 4px; }
+.ares-composer { flex-shrink: 0; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.ares-composer-surface { background: var(--ares-panel); border: 1px solid var(--ares-border); border-radius: 6px; }
+.ares-composer-surface:focus-within { border-color: var(--ares-muted); }
+.ares-message-input { display: block; font-size: 14px; max-height: min(180px, 24vh); }
+.ares-composer-toolbar { display: flex; align-items: center; gap: 4px; padding: 6px 8px 8px; }
+.ares-model-picker { min-width: 0; }
+.ares-model-trigger { min-height: 34px; max-width: 205px; border-radius: 4px; }
+.ares-model-trigger > svg { flex-shrink: 0; }
+.ares-model-menu { position: absolute; bottom: calc(100% + 8px); left: 0; width: 240px; max-width: calc(100vw - 48px); max-height: min(340px, calc(var(--ares-viewport-height, 100dvh) - 230px)); overflow-y: auto; padding: 4px; z-index: 40; border-radius: 6px; }
+.ares-model-menu button { min-height: 52px; border-radius: 3px; }
+.ares-composer-toolbar > .ares-icon-button svg, .ares-send-button svg, .ares-composer-toolbar > div:last-child svg { width: 17px; height: 17px; }
+.ares-send-button:hover:not(:disabled) { filter: brightness(1.15); }
+.ares-sources { margin-top: 16px; }
+.ares-source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ares-source-card { min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--ares-border); border-radius: 6px; color: var(--ares-text); text-decoration: none; background: var(--ares-panel); transition: border-color 160ms ease, background-color 160ms ease; }
+.ares-source-card:hover { border-color: var(--ares-accent); background: var(--ares-panel-2); }
+.ares-source-meta { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--ares-text-dim); font-size: 10px; }
+.ares-source-icon { width: 20px; height: 20px; display: grid; place-items: center; flex-shrink: 0; }
+.ares-source-icon img { width: 16px; height: 16px; object-fit: contain; }
+.ares-source-number { color: var(--ares-muted); font-size: 10px; }
+.ares-source-headline { font-size: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.ares-source-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; color: var(--ares-text-dim); font-size: 10px; }
+.ares-source-footer svg { color: var(--ares-accent); }
+
+/* Portaled dialogs share the app theme and stay within the visual viewport. */
+.ares-modal-surface { width: calc(100% - 32px); max-width: var(--ares-modal-width); max-height: calc(var(--ares-viewport-height, 100dvh) - 40px); top: calc(var(--ares-viewport-top, 0px) + var(--ares-viewport-height, 100dvh) / 2); display: block; overflow-y: auto; overflow-x: hidden; padding: 0; border: 1px solid var(--ares-border); background: var(--ares-panel); color: var(--ares-text); border-radius: 8px; overscroll-behavior: contain; }
+.ares-modal-heading { position: sticky; top: 0; z-index: 2; background: var(--ares-panel); padding: 24px 60px 16px 24px; border-bottom: 1px solid var(--ares-border-soft); }
+.ares-modal-heading h2 { font-size: 16px; line-height: 1.45; letter-spacing: 0; font-weight: 500; overflow-wrap: anywhere; }
+.ares-modal-description { font-size: 12px; line-height: 1.6; margin-top: 6px; color: var(--ares-text-dim); }
+.ares-modal-body { padding: 20px 24px 24px; min-width: 0; overflow-wrap: anywhere; }
+.ares-modal-surface > button { position: fixed; z-index: 3; right: 10px; top: 10px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--ares-text-dim); background: var(--ares-panel); }
+.ares-modal-body pre { overflow-wrap: anywhere; white-space: pre-wrap; }
+.ares-modal-body input:not([hidden]) { min-width: 0; max-width: 100%; }
+.ares-customize-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.ares-customize-grid button { min-width: 0; border-radius: 4px; }
+.ares-customize-grid .ares-label { font-size: 9px !important; overflow-wrap: anywhere; }
+.ares-accent-options { display: flex; flex-wrap: wrap; gap: 5px; }
+.ares-accent-swatch { width: 44px; height: 44px; position: relative; isolation: isolate; border: 1px solid transparent; border-radius: 5px; }
+.ares-accent-swatch::before { content: ''; width: 28px; height: 28px; border-radius: 50%; background: var(--swatch); position: absolute; z-index: -1; }
+.ares-accent-swatch[aria-pressed='true'] { border-color: var(--swatch); }
+.ares-theme-switch { width: 44px; height: 44px; display: grid; place-items: center; }
+.ares-theme-track { position: relative; display: block; width: 40px; height: 22px; border-radius: 20px; }
+.ares-theme-track > span { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; transition: transform 160ms ease; }
+
+@media (max-width: 1099px) {
+  .ares-icon-button { width: 44px; height: 44px; }
+  .ares-topbar { grid-template-columns: 44px minmax(90px, 1fr) minmax(180px, 218px) auto; padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); gap: 12px; }
+  .ares-topbar-actions { gap: 4px; }
+  .ares-labs-button { display: none; }
+  .ares-keys-button { width: auto; }
+  .ares-delete-chat { opacity: 1; }
+  .ares-chat-width { max-width: 720px; }
+  .ares-message-text { font-size: 14px; }
+  .ares-copy-button, .ares-guest-usage button { min-height: 44px; }
+  .ares-model-trigger { min-height: 44px; }
+  .ares-message-input, .ares-modal-body input:not([hidden]), .ares-modal-body textarea { font-size: 16px; }
+  .ares-modal-body button { min-height: 44px; }
+  .ares-composer-note { font-size: 11px; }
+}
+@media (max-width: 599px) {
+  .ares-topbar { grid-template-columns: 44px 1fr auto; gap: 6px 8px; padding: max(4px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left)); }
+  .ares-mode-picker { grid-column: 1 / -1; grid-row: 2; }
+  .ares-mode-trigger { min-height: 44px; padding-inline: 12px; }
+  .ares-mode-trigger > span:nth-child(2) { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+  .ares-mode-tagline { margin-top: 0; font-size: 10px; }
+  .ares-mode-menu { width: 100%; }
+  .ares-topbar-actions { grid-column: 3; grid-row: 1; }
+  .ares-keys-button { width: 44px; border: 0; padding: 0; }
+  .ares-keys-button .ares-label { display: none; }
+  .ares-brand { gap: 8px; }
+  .ares-chat-width { padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); }
+  .ares-empty-chat { padding-top: 32px; }
+  .ares-empty-chat h1 { font-size: 36px; }
+  .ares-message-list { padding-top: 20px; }
+  .ares-assistant-message { gap: 6px; }
+  .ares-avatar { width: 16px; height: 18px; font-size: 9px; }
+  .ares-assistant-content { max-width: calc(100% - 22px); }
+  .ares-user-bubble { max-width: 92%; }
+  .ares-assistant-bubble { padding: 10px; }
+  .ares-guest-usage { padding-bottom: 2px; }
+  .ares-guest-usage .ares-label { font-size: 10px; }
+  .ares-composer-toolbar { flex-wrap: wrap; padding: 4px 6px 6px; gap: 2px; }
+  .ares-model-picker { flex-basis: 100%; }
+  .ares-model-trigger { max-width: 100%; width: 100%; border: 0 !important; min-height: 44px; }
+  .ares-model-trigger > svg:last-child { margin-left: auto; }
+  .ares-model-trigger span { font-size: 12px; }
+  .ares-model-menu { width: 100%; max-width: none; }
+  .ares-composer-note { font-size: 9px; line-height: 1.5; margin-top: 6px; }
+  .ares-composer { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .ares-source-grid { gap: 8px; }
+  .ares-source-card { padding: 10px; }
+  .ares-source-headline { font-size: 12px; }
+  .ares-modal-surface { width: calc(100% - 24px); max-height: calc(var(--ares-viewport-height, 100dvh) - 24px); }
+  .ares-modal-heading { padding: 18px 54px 14px 16px; }
+  .ares-modal-body { padding: 16px; }
+  .ares-customize-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 399px) {
+  .ares-source-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-height: 500px) and (max-width: 1099px) {
+  .ares-empty-chat { padding-top: 16px; padding-bottom: 12px; }
+  .ares-empty-chat h1 { font-size: 28px; margin-bottom: 8px; }
+  .ares-composer-note { display: none; }
+  .ares-guest-usage { display: none; }
+  .ares-message-input { max-height: 80px; }
+  .ares-topbar { padding-block: 2px; }
+  .ares-mode-picker { grid-column: auto; grid-row: auto; }
+  .ares-topbar { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .ares-brand { display: none; }
+  .ares-mode-tagline { display: none; }
+  .ares-topbar-actions { grid-row: auto; }
+}
+@media (hover: none) { .ares-delete-chat { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ares-root *, .ares-root *::before, .ares-root *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

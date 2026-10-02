@@ -32,12 +32,14 @@ const CustomizeModal = ({ open, onClose }) => {
       subtitle="Make Ares look the way you want. Changes apply instantly."
     >
       <Section label="Font">
-        <div className="grid grid-cols-6 gap-2">
+        <div className="ares-customize-grid">
           {FONTS.map((f) => {
             const active = look.font === f.id;
             return (
               <button
                 key={f.id}
+                data-testid={`customize-font-${f.id}`}
+                aria-pressed={active}
                 onClick={() => update({ font: f.id })}
                 className="ares-btn py-3 flex flex-col items-center gap-2"
                 style={{
@@ -57,6 +59,7 @@ const CustomizeModal = ({ open, onClose }) => {
         </div>
         <div
           className="mt-3 px-3 py-3 text-[12px]"
+          data-testid="customize-font-preview"
           style={{
             border: '1px solid var(--ares-border-soft)',
             fontFamily: fontById(look.font).stack,
@@ -74,6 +77,8 @@ const CustomizeModal = ({ open, onClose }) => {
             return (
               <button
                 key={t.id}
+                data-testid={`customize-theme-${t.id}`}
+                aria-pressed={active}
                 onClick={() => update({ theme: t.id })}
                 className="ares-btn py-2.5 flex items-center justify-center gap-2 text-[12px]"
                 style={{
@@ -91,13 +96,17 @@ const CustomizeModal = ({ open, onClose }) => {
       </Section>
 
       <Section label="Accent color">
-        <div className="flex items-center gap-3">
+        <div className="ares-accent-options">
           {ACCENTS.map((a) => (
             <button
               key={a.id}
+              data-testid={`customize-accent-${a.id}`}
+              aria-label={`${a.id} accent`}
+              aria-pressed={look.accent === a.id}
+              title={`${a.id} accent`}
               onClick={() => update({ accent: a.id })}
-              className="ares-btn w-[26px] h-[26px] rounded-full flex items-center justify-center"
-              style={{ background: a.hex, transform: look.accent === a.id ? 'scale(1.06)' : 'none' }}
+              className="ares-btn ares-accent-swatch flex items-center justify-center"
+              style={{ '--swatch': a.hex }}
             >
               {look.accent === a.id && <Check size={13} color="#fff" />}
             </button>
@@ -106,15 +115,18 @@ const CustomizeModal = ({ open, onClose }) => {
       </Section>
 
       <Section label="Background">
-        <div className="grid grid-cols-6 gap-2">
+        <div className="ares-customize-grid">
           {BACKGROUNDS.map((b) => {
             const active = look.background === b.id;
             return (
               <button
                 key={b.id}
+                data-testid={`customize-background-${b.id}`}
+                aria-label={`${b.label} background`}
+                aria-pressed={active}
                 onClick={() => update({ background: b.id })}
                 className="ares-btn relative overflow-hidden"
-                style={{ border: `1px solid ${active ? '#e5e5e5' : 'var(--ares-border-soft)'}`, height: 62 }}
+                style={{ border: `1px solid ${active ? 'var(--ares-accent)' : 'var(--ares-border-soft)'}`, height: 72 }}
               >
                 <span className={`absolute inset-0 bg-${b.id}`} />
                 {active && (
@@ -131,8 +143,10 @@ const CustomizeModal = ({ open, onClose }) => {
               </button>
             );
           })}
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={upload} />
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={upload} data-testid="customize-background-upload-input" aria-label="Upload background" />
           <button
+            data-testid="customize-background-upload-button"
+            aria-label="Upload background"
             onClick={() => fileRef.current?.click()}
             className="ares-btn relative flex items-center justify-center"
             style={{ border: '1px solid var(--ares-border-soft)', height: 62 }}
@@ -150,6 +164,7 @@ const CustomizeModal = ({ open, onClose }) => {
 
       <div className="flex justify-end pt-2" style={{ borderTop: '1px solid var(--ares-border-soft)' }}>
         <button
+          data-testid="customize-reset-button"
           onClick={reset}
           className="ares-btn mt-4 flex items-center gap-2 px-3 py-2 text-[12px]"
           style={{ border: '1px solid var(--ares-border)', color: 'var(--ares-text)' }}

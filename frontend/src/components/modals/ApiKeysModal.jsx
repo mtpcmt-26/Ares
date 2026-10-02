@@ -60,14 +60,17 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
     >
       <div className="flex gap-2">
         <input
+          data-testid="api-key-name-input"
+          aria-label="Key name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && create()}
           placeholder="Key name (e.g. my-project)"
-          className="ares-input flex-1 bg-transparent outline-none px-3 py-2.5 text-[12px]"
+          className="ares-input flex-1 min-w-0 bg-transparent outline-none px-3 py-2.5 text-[12px]"
           style={{ border: '1px solid var(--ares-accent)', color: 'var(--ares-text)' }}
         />
         <button
+          data-testid="api-key-create-button"
           onClick={create}
           className="ares-btn flex items-center gap-2 px-4 text-[12px]"
           style={{ border: '1px solid var(--ares-border)', color: 'var(--ares-text)' }}
@@ -82,10 +85,10 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
         <div className="mt-3 px-3 py-2.5" style={{ border: '1px solid var(--ares-accent)' }}>
           <div className="ares-label mb-1">New key (shown once)</div>
           <div className="flex items-center gap-2">
-            <code className="text-[11px] break-all flex-1" style={{ color: 'var(--ares-text)' }}>
+            <code data-testid="api-key-created-value" className="text-[11px] break-all flex-1 min-w-0" style={{ color: 'var(--ares-text)' }}>
               {created}
             </code>
-            <button onClick={() => copy(created, 'Key')} className="ares-btn" style={{ color: 'var(--ares-text-dim)' }}>
+            <button onClick={() => copy(created, 'Key')} aria-label="Copy new key" data-testid="api-key-copy-button" className="ares-btn ares-icon-button" style={{ color: 'var(--ares-text-dim)' }}>
               <Copy size={12} />
             </button>
           </div>
@@ -93,11 +96,11 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
       )}
 
       {!user ? (
-        <p className="mt-3 text-[11px]" style={{ color: 'var(--ares-muted)' }}>
+        <p data-testid="api-keys-login-required" className="mt-3 text-[11px]" style={{ color: 'var(--ares-muted)' }}>
           Log in to create API keys.
         </p>
       ) : keys.length === 0 ? (
-        <p className="mt-3 text-[11px]" style={{ color: 'var(--ares-muted)' }}>
+        <p data-testid="api-keys-empty" className="mt-3 text-[11px]" style={{ color: 'var(--ares-muted)' }}>
           No keys yet.
         </p>
       ) : (
@@ -105,16 +108,17 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
           {keys.map((k) => (
             <div
               key={k.id}
-              className="flex items-center gap-3 px-3 py-2"
+              data-testid={`api-key-${k.id}`}
+              className="flex flex-wrap items-center gap-3 px-3 py-2"
               style={{ border: '1px solid var(--ares-border-soft)' }}
             >
-              <span className="text-[12px] flex-1" style={{ color: 'var(--ares-text)' }}>
+              <span className="text-[12px] flex-1 min-w-0 break-all" style={{ color: 'var(--ares-text)' }}>
                 {k.name}
               </span>
               <code className="text-[11px]" style={{ color: 'var(--ares-muted)' }}>
                 {k.preview}
               </code>
-              <button onClick={() => remove(k.id)} className="ares-btn" style={{ color: 'var(--ares-muted)' }}>
+              <button onClick={() => remove(k.id)} aria-label={`Delete ${k.name}`} data-testid={`api-key-delete-${k.id}`} className="ares-btn ares-icon-button" style={{ color: 'var(--ares-muted)' }}>
                 <Trash2 size={12} />
               </button>
             </div>
@@ -126,6 +130,7 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
         <div className="flex items-center justify-between">
           <span className="ares-label">Endpoint</span>
           <button
+            data-testid="api-endpoint-copy-button"
             onClick={() => copy(endpoint, 'Endpoint')}
             className="ares-btn flex items-center gap-1 text-[11px]"
             style={{ color: 'var(--ares-text-dim)' }}
@@ -133,13 +138,14 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
             <Copy size={11} /> Copy
           </button>
         </div>
-        <code className="block mt-2 text-[11px] break-all" style={{ color: 'var(--ares-text)' }}>
+        <code data-testid="api-endpoint-value" className="block mt-2 text-[11px] break-all" style={{ color: 'var(--ares-text)' }}>
           {endpoint}
         </code>
 
         <div className="flex items-center justify-between mt-4">
           <span className="ares-label">Example</span>
           <button
+            data-testid="api-example-copy-button"
             onClick={() => copy(example, 'Example')}
             className="ares-btn flex items-center gap-1 text-[11px]"
             style={{ color: 'var(--ares-text-dim)' }}
@@ -148,6 +154,7 @@ const ApiKeysModal = ({ open, onClose, user, onNeedLogin }) => {
           </button>
         </div>
         <pre
+          data-testid="api-example-code"
           className="mt-2 px-3 py-2.5 text-[10px] whitespace-pre-wrap ares-scroll"
           style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--ares-text-dim)' }}
         >

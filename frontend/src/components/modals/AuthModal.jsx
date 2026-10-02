@@ -26,6 +26,8 @@ const AuthModal = ({ open, onClose, reason }) => {
 
   const field = (key, placeholder, type = 'text') => (
     <input
+      data-testid={`auth-${key}-input`}
+      aria-label={placeholder}
       value={form[key]}
       onChange={(e) => setForm({ ...form, [key]: e.target.value })}
       placeholder={placeholder}
@@ -49,6 +51,7 @@ const AuthModal = ({ open, onClose, reason }) => {
         {['login', 'signup'].map((t) => (
           <button
             key={t}
+            data-testid={`auth-${t}-tab`}
             onClick={() => setTab(t)}
             className="ares-btn flex-1 py-2 text-[11px] tracking-[0.12em] uppercase"
             style={{
@@ -67,11 +70,12 @@ const AuthModal = ({ open, onClose, reason }) => {
         {field('email', 'Email', 'email')}
         {field('password', 'Password', 'password')}
         {err && (
-          <p className="text-[11px] mb-2" style={{ color: '#ef6b64' }}>
+          <p data-testid="auth-error" role="alert" className="text-[11px] mb-2" style={{ color: '#ef6b64' }}>
             {err}
           </p>
         )}
         <button
+          data-testid="auth-submit-button"
           type="submit"
           disabled={busy}
           className="ares-btn w-full py-2.5 text-[12px]"
@@ -88,6 +92,7 @@ const AuthModal = ({ open, onClose, reason }) => {
       </div>
 
       <button
+        data-testid="auth-google-button"
         onClick={googleLogin}
         className="ares-btn w-full py-2.5 text-[12px] flex items-center justify-center gap-2"
         style={{ border: '1px solid var(--ares-border)', color: 'var(--ares-text)' }}

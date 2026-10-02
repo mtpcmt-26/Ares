@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Paperclip, Image as ImageIcon, Trash2, ArrowUp, Sparkles, ChevronDown, Globe, X } from 'lucide-react';
-import { MODELS, modelById, modeById } from '../lib/constants';
+import { MODELS, modelById } from '../lib/constants';
 
 const Composer = ({
-  mode,
   model,
   onModel,
   onSend,
@@ -23,21 +22,35 @@ const Composer = ({
   const taRef = useRef(null);
   const menuRef = useRef(null);
   const fileRef = useRef(null);
-  const m = modeById(mode);
 
   useEffect(() => {
     const onDoc = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) setOpenModels(false);
     };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
+    const escape = (e) => { if (e.key === 'Escape') { setOpenModels(false); menuRef.current?.querySelector('button')?.focus(); } };
+    document.addEventListener('pointerdown', onDoc);
+    if (openModels) document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', onDoc); document.removeEventListener('keydown', escape); };
+  }, [openModels]);
 
   useEffect(() => {
-    if (taRef.current) {
-      taRef.current.style.height = 'auto';
-      taRef.current.style.height = Math.min(taRef.current.scrollHeight, 180) + 'px';
-    }
+    const input = taRef.current;
+    const resize = () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 180) + 'px';
+    };
+    resize();
+    let width = input.clientWidth;
+    let frame;
+    const observer = new ResizeObserver(() => {
+      if (input.clientWidth !== width) {
+        width = input.clientWidth;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(resize);
+      }
+    });
+    observer.observe(input);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
   }, [text]);
 
   const submit = () => {
@@ -57,20 +70,20 @@ const Composer = ({
   };
 
   return (
-    <div className="w-full max-w-[570px] mx-auto px-4 pb-3">
+    <div className="ares-composer ares-chat-width" data-testid="chat-composer">
       <div
-        style={{ border: '1px solid var(--ares-border)', background: 'rgba(18,18,18,0.86)' }}
-        className="ares-input"
+        className="ares-input ares-composer-surface"
       >
         {attachment && (
           <div className="px-3 pt-3 flex items-start gap-2">
             <img
               src={`data:image/png;base64,${attachment}`}
               alt="attachment"
-              className="h-[54px] w-auto"
+              data-testid="composer-attachment-preview"
+              className="h-[54px] max-w-[80%] object-contain w-auto"
               style={{ border: '1px solid var(--ares-border)' }}
             />
-            <button onClick={onRemoveAttachment} className="ares-btn" style={{ color: 'var(--ares-muted)' }}>
+            <button onClick={onRemoveAttachment} className="ares-btn ares-icon-button" aria-label="Remove attachment" data-testid="attachment-remove-button" style={{ color: 'var(--ares-muted)' }}>
               <X size={12} />
             </button>
           </div>
@@ -78,40 +91,43 @@ const Composer = ({
 
         <textarea
           ref={taRef}
+          data-testid="message-input"
+          aria-label="Message Ares"
           rows={1}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && !window.matchMedia('(pointer: coarse)').matches) {
               e.preventDefault();
               submit();
             }
           }}
-          placeholder={
-            imageMode
-              ? 'Describe an image for Ares to generate'
-              : `Message Ares \u2014 ${m.label.charAt(0) + m.label.slice(1).toLowerCase()} mode`
-          }
-          className="w-full resize-none bg-transparent outline-none px-3 pt-3 pb-1 text-[13px] ares-scroll"
+          placeholder={imageMode ? 'Describe an image…' : 'Message Ares…'}
+          className="ares-message-input w-full resize-none bg-transparent outline-none px-3 pt-3 pb-1 ares-scroll"
           style={{ color: 'var(--ares-text)' }}
         />
 
-        <div className="flex items-center gap-2 px-2 pb-2 pt-1">
-          <div ref={menuRef} className="relative">
+        <div className="ares-composer-toolbar">
+          <div ref={menuRef} className="relative ares-model-picker">
             <button
+              data-testid="model-picker-button"
+              aria-expanded={openModels}
+              aria-controls="ares-models"
               onClick={() => setOpenModels((o) => !o)}
-              className="ares-btn flex items-center gap-1.5 px-2 py-1"
+              className="ares-btn ares-model-trigger flex items-center gap-1.5 px-2 py-1"
               style={{ border: '1px solid var(--ares-border-soft)', color: 'var(--ares-text-dim)' }}
             >
               <Sparkles size={11} style={{ color: 'var(--ares-accent)' }} />
-              <span className="text-[11px]">{modelById(model).label}</span>
+              <span className="text-[11px] truncate">{modelById(model).label}</span>
               <ChevronDown size={11} />
             </button>
             {openModels && (
               <div
-                className="ares-pop absolute bottom-[34px] left-0 w-[210px] py-1 z-40"
+                id="ares-models"
+                data-testid="model-picker-menu"
+                className="ares-pop ares-model-menu ares-scroll"
                 style={{
-                  background: '#151515',
+                  background: 'var(--ares-panel)',
                   border: '1px solid var(--ares-border)',
                   boxShadow: '0 18px 40px rgba(0,0,0,0.55)',
                 }}
@@ -119,6 +135,8 @@ const Composer = ({
                 {MODELS.map((mo) => (
                   <button
                     key={mo.id}
+                    data-testid={`model-option-${mo.id}`}
+                    aria-pressed={mo.id === model}
                     onClick={() => {
                       onModel(mo.id);
                       setOpenModels(false);
@@ -143,26 +161,35 @@ const Composer = ({
             )}
           </div>
 
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={pickFile} />
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={pickFile} data-testid="attachment-input" aria-label="Attach image" />
           <button
+            data-testid="attachment-button"
+            aria-label="Attach image"
             onClick={() => fileRef.current?.click()}
-            className="ares-btn p-1"
+            className="ares-btn ares-icon-button"
             style={{ color: 'var(--ares-text-dim)' }}
             title="Attach image"
           >
             <Paperclip size={13} />
           </button>
           <button
+            data-testid="image-mode-button"
+            aria-label="Image generation mode"
+            aria-pressed={imageMode}
             onClick={onImageMode}
-            className="ares-btn p-1"
+            className="ares-btn ares-icon-button"
             style={{ color: imageMode ? 'var(--ares-accent)' : 'var(--ares-text-dim)' }}
             title="Image generation mode"
           >
             <ImageIcon size={13} />
           </button>
           <button
+            data-testid="web-search-button"
+            aria-label="Live web search"
+            aria-pressed={webSearch}
+            disabled={!webEnabled}
             onClick={() => webEnabled && onWebSearch()}
-            className="ares-btn p-1"
+            className="ares-btn ares-icon-button"
             style={{
               color: webSearch ? 'var(--ares-accent)' : 'var(--ares-text-dim)',
               opacity: webEnabled ? 1 : 0.35,
@@ -177,23 +204,27 @@ const Composer = ({
             <Globe size={13} />
           </button>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1">
             <button
+              data-testid="clear-conversation-button"
+              aria-label="Clear conversation"
               onClick={onClear}
-              className="ares-btn p-1"
+              className="ares-btn ares-icon-button"
               style={{ color: 'var(--ares-text-dim)' }}
               title="Clear conversation"
             >
               <Trash2 size={13} />
             </button>
             <button
+              data-testid="send-message-button"
+              aria-label="Send message"
               onClick={submit}
-              disabled={busy}
-              className="ares-btn w-[24px] h-[24px] flex items-center justify-center"
+              disabled={busy || !text.trim()}
+              className="ares-btn ares-icon-button ares-send-button"
               style={{
                 background: busy ? '#2a2a2a' : '#bdbdbd',
                 color: '#101010',
-                opacity: busy ? 0.6 : 1,
+                opacity: busy || !text.trim() ? 0.45 : 1,
               }}
               title="Send"
             >
@@ -202,7 +233,7 @@ const Composer = ({
           </div>
         </div>
       </div>
-      <p className="text-center text-[10px] mt-2" style={{ color: 'var(--ares-muted)' }}>
+      <p className="ares-composer-note text-center text-[10px] mt-2" data-testid="chat-disclaimer" style={{ color: 'var(--ares-muted)' }}>
         Ares can make mistakes. Fact-check anything important.
       </p>
     </div>

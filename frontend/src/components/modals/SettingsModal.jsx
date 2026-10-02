@@ -10,6 +10,7 @@ const SettingsModal = ({ open, onClose, onCustomize, onClearAll }) => {
   return (
     <Modal open={open} onClose={onClose} title="Settings" subtitle="Configure how Ares behaves and looks." width={400}>
       <button
+        data-testid="settings-customize-button"
         onClick={onCustomize}
         className="ares-btn w-full flex items-center gap-3 px-3 py-3 mb-3 text-left"
         style={{ border: '1px solid var(--ares-border)' }}
@@ -41,14 +42,13 @@ const SettingsModal = ({ open, onClose, onCustomize, onClearAll }) => {
           </span>
         </span>
         <button
+          data-testid="settings-theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed={dark}
           onClick={() => update({ theme: dark ? 'light' : 'dark' })}
-          className="ares-btn relative w-[40px] h-[21px] rounded-full shrink-0"
-          style={{ background: dark ? '#f2f2f2' : '#3a3a3a' }}
+          className="ares-btn ares-theme-switch shrink-0"
         >
-          <span
-            className="absolute top-[3px] w-[15px] h-[15px] rounded-full"
-            style={{ left: dark ? 22 : 3, background: dark ? '#111' : '#e8e8e8', transition: 'left 0.18s ease' }}
-          />
+          <span className="ares-theme-track" style={{ background: dark ? '#f2f2f2' : '#3a3a3a' }}><span style={{ transform: dark ? 'translateX(18px)' : 'none', background: dark ? '#111' : '#e8e8e8' }} /></span>
         </button>
       </div>
 
@@ -62,6 +62,7 @@ const SettingsModal = ({ open, onClose, onCustomize, onClearAll }) => {
           </span>
         </span>
         <button
+          data-testid="settings-clear-all-button"
           onClick={onClearAll}
           className="ares-btn px-3 py-1.5 text-[12px] shrink-0"
           style={{ background: '#e5342f', color: '#fff' }}

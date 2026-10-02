@@ -1,168 +1,46 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PanelLeft, ChevronUp, ChevronDown, FlaskConical, Sun, Moon, KeyRound } from 'lucide-react';
+import { PanelLeft, ChevronDown, FlaskConical, Sun, Moon, KeyRound, Check } from 'lucide-react';
 import { MODES, modeById } from '../lib/constants';
 import { useAres } from '../context/AresContext';
 
-const TopBar = ({ mode, onMode, onToggleSidebar, onOpenKeys, onLabs, labsOn }) => {
+const TopBar = ({ mode, onMode, onToggleSidebar, sidebarOpen, onOpenKeys, onLabs, labsOn }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const { look, update } = useAres();
   const current = modeById(mode);
 
   useEffect(() => {
-    const onDoc = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
+    const dismiss = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const escape = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
+    if (open) { document.addEventListener('pointerdown', dismiss); document.addEventListener('keydown', escape); }
+    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', escape); };
+  }, [open]);
 
   return (
-    <header
-      className="relative z-30 h-[52px] shrink-0 flex items-center px-4"
-      style={{ borderBottom: '1px solid var(--ares-border-soft)', background: 'var(--ares-bg)' }}
-    >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <button
-          onClick={onToggleSidebar}
-          className="ares-btn"
-          style={{ color: 'var(--ares-text-dim)' }}
-          title="Toggle sidebar"
-        >
-          <PanelLeft size={16} />
-        </button>
+    <header className="ares-topbar" data-testid="chat-header">
+      <button onClick={onToggleSidebar} className="ares-btn ares-icon-button" aria-label="Toggle navigation" aria-expanded={sidebarOpen} aria-controls="ares-sidebar" title="Toggle navigation" data-testid="sidebar-toggle-button"><PanelLeft size={19} /></button>
+      <div className="ares-brand" data-testid="header-brand">
+        <div className="ares-brand-mark">A</div>
+        <div><div className="text-[15px]">ARES</div><div className="ares-label">by simpl.</div></div>
       </div>
-
-      <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2" style={{ marginLeft: -170 }}>
-        <div
-          className="w-[26px] h-[26px] flex items-center justify-center text-[13px] font-semibold"
-          style={{ background: '#f2f2f2', color: '#111' }}
-        >
-          A
-        </div>
-        <div className="leading-none">
-          <div className="text-[15px] tracking-[0.12em]" style={{ color: 'var(--ares-text)' }}>
-            ARES
-          </div>
-          <div className="ares-label mt-[3px]">by simpl.</div>
-        </div>
+      <div ref={ref} className="ares-mode-picker">
+        <button onClick={() => setOpen((o) => !o)} className="ares-btn ares-mode-trigger" aria-expanded={open} aria-controls="ares-modes" data-testid="mode-picker-button">
+          <span className="ares-mode-dot" style={{ background: current.dot }} />
+          <span className="text-left min-w-0"><span className="block text-xs">{current.label}</span><span className="ares-mode-tagline">{current.tagline}</span></span>
+          <ChevronDown size={15} className={`ml-auto shrink-0 ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && <div id="ares-modes" className="ares-pop ares-mode-menu ares-scroll" data-testid="mode-picker-menu">
+          {MODES.map((m) => <button key={m.id} onClick={() => { onMode(m.id); setOpen(false); ref.current?.querySelector('button')?.focus(); }} className="ares-btn ares-mode-option" aria-pressed={m.id === mode} data-testid={`mode-option-${m.id}`}>
+            <span className="ares-mode-dot mt-1" style={{ background: m.dot }} />
+            <span className="flex-1 text-left"><span className="block text-xs">{m.label} {m.badge && <small>{m.badge}</small>}</span><span className="block text-[11px] mt-1" style={{ color: 'var(--ares-text-dim)' }}>{m.desc}</span></span>
+            {m.id === mode && <Check size={14} className="shrink-0" />}
+          </button>)}
+        </div>}
       </div>
-
-      {/* Mode selector */}
-      <div ref={ref} className="absolute left-1/2 -translate-x-1/2" style={{ marginLeft: 130 }}>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="ares-btn w-[218px] flex items-center justify-between px-3 py-1.5"
-          style={{ border: '1px solid var(--ares-border)', background: 'var(--ares-panel-2)' }}
-        >
-          <span className="flex items-start gap-2">
-            <span
-              className="w-[5px] h-[5px] rounded-full mt-[6px]"
-              style={{ background: current.dot }}
-            />
-            <span className="text-left leading-none">
-              <span className="block text-[11px] tracking-[0.12em]" style={{ color: 'var(--ares-text)' }}>
-                {current.label}
-              </span>
-              <span className="block text-[10px] mt-[4px]" style={{ color: 'var(--ares-muted)' }}>
-                {current.tagline}
-              </span>
-            </span>
-          </span>
-          {open ? (
-            <ChevronUp size={14} style={{ color: 'var(--ares-muted)' }} />
-          ) : (
-            <ChevronDown size={14} style={{ color: 'var(--ares-muted)' }} />
-          )}
-        </button>
-
-        {open && (
-          <div
-            className="ares-pop absolute left-0 top-[42px] w-[218px] py-1 z-40"
-            style={{
-              background: '#151515',
-              border: '1px solid var(--ares-border)',
-              boxShadow: '0 18px 40px rgba(0,0,0,0.55)',
-            }}
-          >
-            {MODES.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => {
-                  onMode(m.id);
-                  setOpen(false);
-                }}
-                className="ares-btn w-full text-left px-3 py-2 flex gap-2"
-                style={{ background: m.id === mode ? 'rgba(255,255,255,0.06)' : 'transparent' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background =
-                    m.id === mode ? 'rgba(255,255,255,0.06)' : 'transparent')
-                }
-              >
-                <span
-                  className="w-[5px] h-[5px] rounded-full mt-[6px] shrink-0"
-                  style={{ background: m.dot }}
-                />
-                <span>
-                  <span className="flex items-center gap-2">
-                    <span className="text-[11px] tracking-[0.12em]" style={{ color: 'var(--ares-text)' }}>
-                      {m.label}
-                    </span>
-                    {m.badge && (
-                      <span className="text-[9px]" style={{ color: 'var(--ares-muted)' }}>
-                        {m.badge}
-                      </span>
-                    )}
-                  </span>
-                  <span className="block text-[10px] mt-[3px] leading-[1.4]" style={{ color: 'var(--ares-muted)' }}>
-                    {m.desc}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center gap-3 ml-auto">
-        <button
-          onClick={onOpenKeys}
-          className="ares-btn flex items-center gap-2 px-2 py-1.5"
-          style={{ border: '1px solid var(--ares-border)', color: 'var(--ares-text-dim)' }}
-          title="Ares API keys"
-        >
-          <KeyRound size={12} />
-          <span className="ares-label">API keys</span>
-        </button>
-
-        <div
-          className="flex items-center gap-2 px-2 py-1.5"
-          style={{ border: '1px solid var(--ares-border)' }}
-        >
-          <FlaskConical size={12} style={{ color: 'var(--ares-text-dim)' }} />
-          <span className="ares-label">Ares labs</span>
-          <button
-            onClick={onLabs}
-            className="ares-btn relative w-[30px] h-[16px] rounded-full"
-            style={{ background: labsOn ? 'var(--ares-accent)' : '#3a3a3a' }}
-            title="Ares Labs"
-          >
-            <span
-              className="absolute top-[2px] w-[12px] h-[12px] rounded-full bg-white"
-              style={{ left: labsOn ? 16 : 2, transition: 'left 0.18s ease' }}
-            />
-          </button>
-        </div>
-
-        <button
-          onClick={() => update({ theme: look.theme === 'light' ? 'dark' : 'light' })}
-          className="ares-btn"
-          style={{ color: 'var(--ares-text-dim)' }}
-          title="Toggle theme"
-        >
-          {look.theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
+      <div className="ares-topbar-actions">
+        <button onClick={onOpenKeys} className="ares-btn ares-icon-button ares-keys-button" aria-label="Ares API keys" title="Ares API keys" data-testid="api-keys-button"><KeyRound size={17} /><span className="ares-label">API keys</span></button>
+        <button onClick={onLabs} className="ares-btn ares-labs-button" aria-pressed={labsOn} title="Ares Labs" data-testid="labs-toggle-button"><FlaskConical size={15} /><span className="ares-label">Ares labs</span><span className={`ares-labs-indicator ${labsOn ? 'is-active' : ''}`} /></button>
+        <button onClick={() => update({ theme: look.theme === 'light' ? 'dark' : 'light' })} className="ares-btn ares-icon-button" aria-label={look.theme === 'light' ? 'Use dark theme' : 'Use light theme'} title="Toggle theme" data-testid="theme-toggle-button">{look.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
       </div>
     </header>
   );

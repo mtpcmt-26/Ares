@@ -195,6 +195,17 @@ backend:
         comment: "✓ API keys and public endpoint fully functional. Tested: GET /api/keys correctly returns 401 for guests (auth required). POST /api/keys creates API key with format 'ares_live_...' for logged-in users. POST /api/v1/ares with valid Bearer token successfully processes requests and returns {reply, mode, model}. Invalid/bogus API keys correctly rejected with 401. Key authentication via sha256 hash working properly."
 
 frontend:
+  - task: "Phone/tablet responsive optimization and source previews"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/styles/ares.css, /app/frontend/src/components/SourcePreviews.jsx, /app/frontend/src/hooks/useResponsiveLayout.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "2026-10-02: Direct browser checks passed at 320/390/768/1024/1440px: drawer navigation, mode/model pickers, 44px primary touch targets, no horizontal overflow, phone dialogs, customization scrolling, light theme, reduced-height composer. Real search returned 8 source cards, 6 loaded favicons and 2 globe fallbacks. Persisted conversation reload, shortened dates, rotation input resizing, touch Enter/newline and dialog focus/Escape passed. Caught and fixed ResizeObserver loop; repeated width changes produced no runtime errors. Production build passed. No frontend testing subagent used per prior user preference; physical iOS/Safari acceptance pending. No API mocks or backend edits. Report: /app/test_reports/responsive_source_previews.json."
   - task: "Full ARES UI clone (sidebar, topbar, modes, composer, modals)"
     implemented: true
     working: "NA"

@@ -12,17 +12,18 @@ const ChatArea = ({ messages, streamingId, mode, imageMode }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-start justify-center px-6 pt-[60px]">
-        <div className="w-full max-w-[560px]">
-          <div className="ares-label mb-3">&mdash; {m.label} mode active</div>
+      <div className="ares-empty-chat ares-scroll" data-testid="empty-chat">
+        <div className="ares-chat-width">
+          <div className="ares-label mb-3" data-testid="active-mode-label">&mdash; {m.label} mode active</div>
           <h1
             className="text-[42px] leading-none mb-4"
-            style={{ color: 'var(--ares-text)', letterSpacing: '-0.02em' }}
+            style={{ color: 'var(--ares-text)' }}
+            data-testid="chat-heading"
           >
             Ask Ares
           </h1>
-          <p className="text-[12px] leading-[1.7] max-w-[420px]" style={{ color: 'var(--ares-text-dim)' }}>
-            {m.desc} Pick a mode above or {imageMode ? 'type a prompt to generate an image.' : 'toggle image mode to generate visuals.'}
+          <p className="text-sm leading-[1.7] max-w-[420px]" style={{ color: 'var(--ares-text-dim)' }} data-testid="chat-mode-description">
+            {imageMode ? 'What would you like to create?' : m.desc}
           </p>
         </div>
       </div>
@@ -30,8 +31,8 @@ const ChatArea = ({ messages, streamingId, mode, imageMode }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto ares-scroll">
-      <div className="w-full max-w-[570px] mx-auto px-4 pt-8 pb-4">
+    <div className="flex-1 min-h-0 overflow-y-auto ares-scroll ares-chat-scroll" data-testid="chat-scroll">
+      <div className="ares-chat-width ares-message-list">
         {messages.map((msg) => (
           <Message key={msg.id} msg={msg} streaming={msg.id === streamingId} />
         ))}

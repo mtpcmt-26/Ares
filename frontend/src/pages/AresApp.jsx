@@ -13,13 +13,16 @@ import api, { API, authHeaders } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from '../hooks/use-toast';
 import { GUEST_LIMIT } from '../lib/constants';
+import { useCompactLayout, useVisualViewport } from '../hooks/useResponsiveLayout';
 
 let uid = 0;
 const nextId = () => `m${Date.now()}_${uid++}`;
 
 const AresApp = () => {
   const { user, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const compact = useCompactLayout();
+  useVisualViewport();
+  const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia('(max-width: 1099px)').matches);
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -36,6 +39,8 @@ const AresApp = () => {
   const [modals, setModals] = useState({ customize: false, settings: false, keys: false, auth: false, account: false });
   const [authReason, setAuthReason] = useState('');
   const activeIdRef = useRef(null);
+
+  useEffect(() => setSidebarOpen(!compact), [compact]);
 
   const openModal = (k, v = true) => setModals((m) => ({ ...m, [k]: v }));
 
@@ -71,6 +76,7 @@ const AresApp = () => {
   }, [user, loadConversations, loadUsage]);
 
   const openConversation = async (id) => {
+    if (compact) setSidebarOpen(false);
     setActiveId(id);
     activeIdRef.current = id;
     const conv = conversations.find((c) => c.id === id);
@@ -87,6 +93,7 @@ const AresApp = () => {
   };
 
   const newChat = () => {
+    if (compact) setSidebarOpen(false);
     setActiveId(null);
     activeIdRef.current = null;
     setMessages([]);
@@ -214,16 +221,25 @@ const AresApp = () => {
   const guestLeft = Math.max(0, usage.limit - usage.used);
 
   return (
-    <div className="ares-root h-screen w-screen flex overflow-hidden">
+    <div className="ares-root ares-app flex overflow-hidden" data-testid="ares-app">
       <Sidebar
         open={sidebarOpen}
+        compact={compact}
+        onClose={() => setSidebarOpen(false)}
         conversations={conversations}
         activeId={activeId}
         onNew={newChat}
         onSelect={openConversation}
         onDelete={deleteConversation}
-        onAccount={() => (user ? openModal('account') : (setAuthReason(''), openModal('auth')))}
-        onSettings={() => openModal('settings')}
+        onAccount={() => {
+          if (compact) setSidebarOpen(false);
+          if (user) openModal('account');
+          else { setAuthReason(''); openModal('auth'); }
+        }}
+        onSettings={() => {
+          if (compact) setSidebarOpen(false);
+          openModal('settings');
+        }}
         user={user}
         onLogout={async () => {
           await logout();
@@ -238,6 +254,7 @@ const AresApp = () => {
           mode={mode}
           onMode={changeMode}
           onToggleSidebar={() => setSidebarOpen((o) => !o)}
+          sidebarOpen={sidebarOpen}
           onOpenKeys={() => openModal('keys')}
           labsOn={labsOn}
           onLabs={() => {
@@ -251,10 +268,11 @@ const AresApp = () => {
           <div className="relative z-10 flex-1 min-h-0 flex flex-col">
             <ChatArea messages={messages} streamingId={streamingId} mode={mode} imageMode={imageMode} />
             {!user && (
-              <div className="text-center pb-1">
+              <div className="ares-guest-usage text-center" data-testid="guest-usage">
                 <span className="ares-label">
                   {guestLeft} of {usage.limit} free messages left —{' '}
                   <button
+                    data-testid="guest-login-button"
                     onClick={() => {
                       setAuthReason('');
                       openModal('auth');
@@ -323,11 +341,12 @@ const AresApp = () => {
           ].map(([k, v]) => (
             <div
               key={k}
-              className="flex items-center justify-between px-3 py-2.5"
+              data-testid={`account-${k.toLowerCase()}`}
+              className="flex flex-wrap gap-2 items-center justify-between px-3 py-2.5 break-words"
               style={{ border: '1px solid var(--ares-border-soft)' }}
             >
               <span className="ares-label">{k}</span>
-              <span className="text-[12px]" style={{ color: 'var(--ares-text)' }}>
+              <span className="text-[12px] min-w-0 break-all" style={{ color: 'var(--ares-text)' }}>
                 {v}
               </span>
             </div>

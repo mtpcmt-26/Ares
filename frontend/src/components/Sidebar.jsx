@@ -1,136 +1,58 @@
 import React from 'react';
-import { Plus, MessageSquare, User, Settings as SettingsIcon, Trash2, LogOut } from 'lucide-react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Dialog, DialogPortal, DialogOverlay, DialogTitle } from './ui/dialog';
+import { Plus, MessageSquare, User, Settings, Trash2, LogOut, X } from 'lucide-react';
 import { modeById } from '../lib/constants';
 
-const Sidebar = ({
-  open,
-  conversations,
-  activeId,
-  onNew,
-  onSelect,
-  onDelete,
-  onAccount,
-  onSettings,
-  user,
-  onLogout,
-}) => {
-  return (
-    <aside
-      className="ares-scroll shrink-0 h-full flex flex-col overflow-hidden"
-      style={{
-        width: open ? 204 : 0,
-        borderRight: open ? '1px solid var(--ares-border-soft)' : 'none',
-        background: 'var(--ares-panel)',
-        transition: 'width 0.22s ease',
-      }}
-    >
+const Sidebar = ({ open, compact, onClose, conversations, activeId, onNew, onSelect, onDelete, onAccount, onSettings, user, onLogout }) => {
+  const content = (
+    <>
+      <div className="ares-sidebar-heading">
+        <span className="text-sm" data-testid="sidebar-brand">ARES <span className="ares-label">by simpl.</span></span>
+        {compact && <button className="ares-btn ares-icon-button" onClick={onClose} aria-label="Close navigation" data-testid="sidebar-close-button"><X size={18} /></button>}
+      </div>
       <div className="px-3 pt-3">
-        <button
-          onClick={onNew}
-          className="ares-btn w-full flex items-center gap-2 px-3 py-2"
-          style={{ border: '1px solid var(--ares-border)', color: 'var(--ares-text)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--ares-panel-2)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-        >
-          <Plus size={12} />
-          <span className="ares-label" style={{ color: 'var(--ares-text)' }}>
-            New chat
-          </span>
+        <button onClick={onNew} className="ares-btn ares-new-chat" data-testid="new-chat-button">
+          <Plus size={16} /><span>New chat</span>
         </button>
       </div>
-
-      <div className="px-4 pt-5 pb-2">
-        <span className="ares-label">Conversations</span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto ares-scroll pb-2">
-        {conversations.length === 0 && (
-          <div className="px-4 py-2 text-[11px]" style={{ color: 'var(--ares-muted)' }}>
-            No conversations yet.
+      <div className="px-4 pt-6 pb-3 ares-label">Conversations</div>
+      <nav className="flex-1 min-h-0 overflow-y-auto ares-scroll" aria-label="Conversations" data-testid="conversation-list">
+        {conversations.length === 0 && <p className="px-4 py-2 text-xs" style={{ color: 'var(--ares-muted)' }} data-testid="conversations-empty">No conversations yet.</p>}
+        {conversations.map((c) => (
+          <div className={`ares-conversation-row ${activeId === c.id ? 'is-active' : ''}`} key={c.id}>
+            <button onClick={() => onSelect(c.id)} className="ares-conversation-select ares-btn" aria-current={activeId === c.id ? 'page' : undefined} data-testid={`conversation-select-${c.id}`}>
+              <MessageSquare size={15} className="shrink-0 mt-1" style={{ color: modeById(c.mode).dot }} />
+              <span className="min-w-0 text-left">
+                <span className="block truncate text-xs" title={c.title}>{c.title}</span>
+                <span className="ares-label block mt-1">{modeById(c.mode).label}</span>
+              </span>
+            </button>
+            <button onClick={() => onDelete(c.id)} className="ares-btn ares-icon-button ares-delete-chat" aria-label={`Delete ${c.title}`} title="Delete conversation" data-testid={`conversation-delete-${c.id}`}><Trash2 size={14} /></button>
           </div>
-        )}
-        {conversations.map((c) => {
-          const mode = modeById(c.mode);
-          const active = c.id === activeId;
-          return (
-            <div
-              key={c.id}
-              onClick={() => onSelect(c.id)}
-              className="ares-btn group relative cursor-pointer px-4 py-2.5 flex items-start gap-2"
-              style={{
-                background: active ? 'var(--ares-panel-2)' : 'transparent',
-                borderLeft: active ? `2px solid var(--ares-accent)` : '2px solid transparent',
-              }}
-              onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.035)';
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <MessageSquare size={12} style={{ color: mode.dot, marginTop: 3, flexShrink: 0 }} />
-              <div className="min-w-0 flex-1">
-                <div
-                  className="truncate text-[12px] leading-tight"
-                  style={{ color: 'var(--ares-text)' }}
-                  title={c.title}
-                >
-                  {c.title}
-                </div>
-                <div className="ares-label mt-1">{mode.label}</div>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(c.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 ares-btn"
-                style={{ color: 'var(--ares-muted)' }}
-                title="Delete"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-          );
-        })}
+        ))}
+      </nav>
+      <div className="ares-sidebar-footer">
+        <button onClick={onAccount} className="ares-btn ares-sidebar-action" data-testid="sidebar-account-button"><User size={16} /><span className="truncate">{user ? user.name || user.email : 'Account'}</span></button>
+        <button onClick={onSettings} className="ares-btn ares-sidebar-action" data-testid="sidebar-settings-button"><Settings size={16} />Settings</button>
+        {user && <button onClick={onLogout} className="ares-btn ares-sidebar-action" data-testid="sidebar-logout-button"><LogOut size={16} />Log out</button>}
       </div>
-
-      <div style={{ borderTop: '1px solid var(--ares-border-soft)' }} className="py-2">
-        <button
-          onClick={onAccount}
-          className="ares-btn w-full flex items-center gap-2 px-4 py-2 text-[12px]"
-          style={{ color: 'var(--ares-text-dim)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ares-text)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ares-text-dim)')}
-        >
-          <User size={12} />
-          <span className="truncate">{user ? user.name || user.email : 'Account'}</span>
-        </button>
-        <button
-          onClick={onSettings}
-          className="ares-btn w-full flex items-center gap-2 px-4 py-2 text-[12px]"
-          style={{ color: 'var(--ares-text-dim)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ares-text)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ares-text-dim)')}
-        >
-          <SettingsIcon size={12} />
-          <span>Settings</span>
-        </button>
-        {user && (
-          <button
-            onClick={onLogout}
-            className="ares-btn w-full flex items-center gap-2 px-4 py-2 text-[12px]"
-            style={{ color: 'var(--ares-text-dim)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ares-text)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ares-text-dim)')}
-          >
-            <LogOut size={12} />
-            <span>Log out</span>
-          </button>
-        )}
-      </div>
-    </aside>
+    </>
   );
+
+  if (compact) return (
+    <Dialog open={open} onOpenChange={(value) => { if (!value) onClose(); }}>
+      <DialogPortal>
+        <DialogOverlay className="ares-drawer-overlay" data-testid="sidebar-backdrop" />
+        <DialogPrimitive.Content className="ares-root ares-sidebar ares-drawer" id="ares-sidebar" aria-describedby={undefined} data-testid="sidebar-drawer" onCloseAutoFocus={(e) => { e.preventDefault(); document.querySelector('[data-testid="sidebar-toggle-button"]')?.focus(); }}>
+          <DialogTitle className="sr-only">Navigation</DialogTitle>
+          {content}
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
+  );
+
+  return open ? <aside className="ares-sidebar" id="ares-sidebar" data-testid="sidebar-desktop">{content}</aside> : null;
 };
 
 export default Sidebar;

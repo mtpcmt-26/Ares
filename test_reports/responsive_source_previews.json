@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-02",
+  "type": "main-agent-direct-browser-checks",
+  "scope": "Phone/tablet UI priority plus source favicon/headline cards",
+  "build": "passed",
+  "application_api_mocks": false,
+  "frontend_testing_subagent": "not invoked per prior user preference",
+  "tested_widths": [320, 390, 768, 1024, 1440, 1920],
+  "passed": [
+    "Responsive header, mode/model picker including longest labels",
+    "44px primary phone/tablet touch targets",
+    "Drawer New chat, conversation selection, backdrop and Escape dismissal",
+    "No tested-control or source-card horizontal overflow",
+    "320px Settings, Customize, API keys and signup dialog layouts",
+    "Customization scrolling, light theme, background selection and reset",
+    "Dialog focus containment and Escape dismissal",
+    "Send remains visible at reduced viewport height",
+    "Repeated rotation resizes long input (168px to 112px) without runtime errors",
+    "Touch-emulated Enter inserts newline without sending",
+    "Real web search produces response and 8 linked source cards",
+    "6 source favicons loaded; 2 unavailable favicons use globe fallback",
+    "Persisted conversation restores source cards, reply and compact dates"
+  ],
+  "fixed_during_verification": [
+    "ResizeObserver writes deferred with requestAnimationFrame to prevent notification-loop runtime overlay"
+  ],
+  "test_harness_notes": [
+    "Early forced clicks interrupted drawer transitions; transition-aware reruns passed"
+  ],
+  "unverified": [
+    "Physical iOS/Android on-screen keyboards and native Safari",
+    "User acceptance against original screenshots",
+    "Existing Google social-login callback (not changed in this task)"
+  ],
+  "known_current_scope_failures": []
+}
