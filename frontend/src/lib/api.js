@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+export const API = '/api';
 
 export const guestId = (() => {
   let g = localStorage.getItem('ares_guest_id');
