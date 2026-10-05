@@ -12,7 +12,6 @@ from emergentintegrations.llm.chat import (
     LlmChat,
     UserMessage,
     ImageContent,
-    
 )
 
 from core import db, new_id, now_utc, get_identity, require_user, GUEST_LIMIT
@@ -316,10 +315,13 @@ async def chat_stream(body: ChatIn, request: Request):
             file_contents = [ImageContent(body.attachment)] if body.attachment else None
             msg = UserMessage(text=prompt_text, file_contents=file_contents)
             async for ev in chat.stream_message(msg):
-                if isinstance(ev, TextDelta):
-                    full += ev.content
-                    yield sse({'type': 'delta', 'content': ev.content})
-                elif isinstance(ev, StreamDone):
+                event_type = getattr(ev, 'type', None)
+                if event_type == 'text_delta':
+                    content = getattr(ev, 'content', '') or ''
+                    if content:
+                        full += content
+                        yield sse({'type': 'delta', 'content': content})
+                elif event_type == 'stream_done':
                     break
         except Exception as e:
             logger.error(f'chat failed: {e}')
