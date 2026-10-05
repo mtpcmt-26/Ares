@@ -24,6 +24,9 @@ client = AsyncMongoClient(
     connectTimeoutMS=10000,
     socketTimeoutMS=20000,
     retryWrites=True,
+    # Atlas/Vercel can encounter OCSP endpoint handshake failures; this keeps
+    # certificate validation enabled while disabling the separate OCSP endpoint check.
+    tlsDisableOCSPEndpointCheck=True,
 )
 db = client[os.environ.get('DB_NAME', 'ares_db')]
 
