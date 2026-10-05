@@ -8,13 +8,23 @@ from pathlib import Path
 import jwt
 from dotenv import load_dotenv
 from fastapi import HTTPException, Request
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise RuntimeError('MONGO_URL is required for Ares; refusing to fall back to localhost in production.')
+
+# Atlas SRV URIs enable TLS by default. Use bounded timeouts for serverless requests.
+client = AsyncMongoClient(
+    mongo_url,
+    serverSelectionTimeoutMS=10000,
+    connectTimeoutMS=10000,
+    socketTimeoutMS=20000,
+    retryWrites=True,
+)
 db = client[os.environ.get('DB_NAME', 'ares_db')]
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'ares-dev-secret-change-me')
