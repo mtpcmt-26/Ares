@@ -310,24 +310,33 @@ async def chat_stream(body: ChatIn, request: Request):
                 yield sse({'type': 'citations', 'items': citations})
 
         full = ''
+        used_model = model
         try:
-            chat = build_chat(cid, system_for(body.mode), model, history)
-            file_contents = [ImageContent(body.attachment)] if body.attachment else None
-            msg = UserMessage(text=prompt_text, file_contents=file_contents)
-            async for ev in chat.stream_message(msg):
-                event_type = getattr(ev, 'type', None)
-                if event_type == 'text_delta':
-                    content = getattr(ev, 'content', '') or ''
-                    if content:
-                        full += content
-                        yield sse({'type': 'delta', 'content': content})
-                elif event_type == 'stream_done':
-                    break
+            # Use the SDK's stable non-streaming call here, then emit the complete
+            # answer as one SSE delta. This keeps the frontend streaming contract
+            # while avoiding version-specific stream event classes.
+            try:
+                chat = build_chat(cid, system_for(body.mode), model, history)
+                file_contents = [ImageContent(body.attachment)] if body.attachment else None
+                msg = UserMessage(text=prompt_text, file_contents=file_contents)
+                full = await chat.send_message(msg)
+            except Exception as primary_error:
+                # If the selected model is temporarily unavailable, retry once
+                # with the lightweight OpenAI model so a normal chat still works.
+                if model != 'gpt-4o-mini':
+                    logger.warning(f'primary model {model} failed, retrying with gpt-4o-mini: {primary_error}')
+                    used_model = 'gpt-4o-mini'
+                    chat = build_chat(cid, system_for(body.mode), used_model, history)
+                    file_contents = [ImageContent(body.attachment)] if body.attachment else None
+                    msg = UserMessage(text=prompt_text, file_contents=file_contents)
+                    full = await chat.send_message(msg)
+                else:
+                    raise
+            if full:
+                yield sse({'type': 'delta', 'content': full})
         except Exception as e:
-            logger.error(f'chat failed: {e}')
-            if not full:
-                yield sse({'type': 'error', 'message': 'Ares could not respond right now.'})
-
+            logger.exception(f'chat failed: {e}')
+            yield sse({'type': 'error', 'message': 'Ares could not respond right now.'})
         if full:
             await db.messages.insert_one(
                 {
